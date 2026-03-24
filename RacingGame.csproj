@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>RacingGame</RootNamespace>
+    <AssemblyName>RacingGame</AssemblyName>
+    <LangVersion>10</LangVersion>
+    <StartupObject>RacingGame.Program</StartupObject>
+    <NoWarn>$(NoWarn);NUnit2005;NUnit2006</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit"                  Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter"      Version="4.4.2"  />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+  </ItemGroup>
+
+</Project>
