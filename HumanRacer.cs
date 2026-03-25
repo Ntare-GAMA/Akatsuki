@@ -28,6 +28,7 @@ namespace RacingGame.Models
         public bool   MaintainSpeedEnabled { get; private set; }
         public double MaintainSpeedTarget  { get; private set; }
         public bool   CanRefuelNow         { get; private set; }
+        public bool   IsBraking            { get; private set; }
 
         private List<double> _lapTimes = new();
 
@@ -69,7 +70,7 @@ namespace RacingGame.Models
                 else
                 {
                     // Consume fuel over time while the player maintains speed.
-                    SelectedCar.UseFuel(GameConstants.MaintainSpeedFuelPerTick);
+                    SelectedCar.UseFuel(GameConstants.MaintainSpeedFuelPerTick * SelectedCar.FuelUseMultiplier);
 
                     if (SelectedCar.Fuel <= 0)
                     {
@@ -85,10 +86,20 @@ namespace RacingGame.Models
                 }
             }
 
+            // ── Passive fuel drain (engine running = fuel burning) ────────
+            if (!HasFinished && SelectedCar.Fuel > 0)
+                SelectedCar.UseFuel(GameConstants.PassiveFuelDrainPerTick * SelectedCar.FuelUseMultiplier);
+
             // Natural deceleration each tick (friction / coasting)
             if (!MaintainSpeedEnabled)
             {
-                Speed = Math.Max(0, Speed - 0.15);
+                double decel = 0.15;
+                if (SelectedCar.Fuel <= 0)
+                    decel = GameConstants.OutOfFuelDecelerationPerTick;
+                if (IsBraking)
+                    decel = System.Math.Max(decel, GameConstants.BrakeDecelerationPerTick);
+
+                Speed = Math.Max(0, Speed - decel);
             }
 
             // Calculate distance for this tick
@@ -106,16 +117,18 @@ namespace RacingGame.Models
             }
 
             UpdateRefuelAvailability();
+            IsBraking = false; // one-tick braking input
         }
 
-        /// <summary>Player presses SPACEBAR → boost applied.</summary>
+        /// <summary>Player presses SPACEBAR → boost applied. Requires fuel.</summary>
         public void ApplyBoost()
         {
             if (BoostsLeft <= 0 || HasFinished) return;
+            if (SelectedCar.Fuel <= 0) return;   // ← no fuel = no boost; car coasts to a stop
 
             Speed      += GameConstants.HumanBoostPower * SelectedCar.Stats.Acceleration;
             BoostsLeft -= 1;
-            SelectedCar.UseFuel(2.5); // Example: each boost uses 2.5 units of fuel
+            SelectedCar.UseFuel(2.5 * SelectedCar.FuelUseMultiplier);
 
             // Cap speed
             Speed = Math.Min(Speed, 8.0 * SelectedCar.Stats.TopSpeed);
@@ -159,13 +172,26 @@ namespace RacingGame.Models
         public bool TryRefuel()
         {
             if (HasFinished) return false;
-            if (!CanRefuelNow) return false;
+            bool stopped = Speed <= GameConstants.RefuelStoppedSpeedThreshold;
+            if (!CanRefuelNow && !stopped) return false;
             if (SelectedCar.Fuel >= SelectedCar.MaxFuel - 0.001) return false;
 
             SelectedCar.RefuelToFull();
             _refuelUsedThisLap = true;
             CanRefuelNow = false;
             return true;
+        }
+
+        /// <summary>
+        /// Applies an immediate brake impulse to help the player stop for refuelling.
+        /// </summary>
+        public void ApplyBrake()
+        {
+            if (HasFinished) return;
+            IsBraking = true;
+            MaintainSpeedEnabled = false;
+            MaintainSpeedTarget = 0;
+            _maintainTargetSpeed = 0;
         }
 
         /// <summary>Record a lap time and reset for next lap.</summary>

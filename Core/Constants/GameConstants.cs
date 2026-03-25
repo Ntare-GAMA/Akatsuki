@@ -5,7 +5,7 @@ namespace RacingGame.Core.Constants
     {
         // Track
         public const int TrackLength        = 60;   // units (progress bar width)
-        public const int DefaultLaps        = 3;
+        public const int DefaultLaps        = 5;
 
         // Racing
         public const int RaceLoopMs         = 120;  // ms per tick
@@ -15,9 +15,16 @@ namespace RacingGame.Core.Constants
 
         // Fuel / cruising
         public const double MaxFuel                         = 100.0;
-        public const double MaintainSpeedFuelPerTick      = 0.25; // per 120ms tick
+        public const double MaintainSpeedFuelPerTick      = 0.25; // per 120ms tick while cruise is on
+        public const double PassiveFuelDrainPerTick       = 0.08; // per 120ms tick just from driving
         public const double MaintainSpeedEnableMinSpeed    = 0.25; // must already be moving
-        public const double RefuelStationWindow            = 2.5;  // distance in track units
+        public const double RefuelStationWindow            = 8.0;  // distance in track units (~1.5 s window)
+        public const double OutOfFuelDecelerationPerTick   = 0.60; // stronger slowdown with empty tank
+        public const double BrakeDecelerationPerTick       = 1.20; // player brake for pit/refuel control
+        public const double RefuelStoppedSpeedThreshold    = 0.20; // allow refuel when basically stopped
+        public const double RaceTimeLimitSeconds           = 180.0; // assignment: race can end on time out
+        public const double TurnSeconds                    = 2.0;   // each action consumes fixed race time
+        public const int AutoTurnMs                        = 900;   // UI auto-plays turns for all racers
 
         // Weather multipliers
         public const double SunnyMult       = 1.10;

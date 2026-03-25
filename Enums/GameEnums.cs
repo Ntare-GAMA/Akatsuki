@@ -17,4 +17,7 @@ namespace RacingGame.Enums
 
     /// <summary>AI difficulty level.</summary>
     public enum AIDifficulty { Rookie, Amateur, Pro, Elite }
+
+    /// <summary>Discrete player actions in turn-based race mode.</summary>
+    public enum TurnAction { SpeedUp, MaintainSpeed, PitStop }
 }

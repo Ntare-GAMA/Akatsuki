@@ -70,7 +70,7 @@ namespace RacingGame.Forms
                 IntegralHeight = false
             };
             foreach (var c in _cars)
-                _lstCars.Items.Add($"{c.Symbol}  {c.Name,-20}  [{c.Tier,-10}]  Spd:{c.Stats.TopSpeed:F1}  Acc:{c.Stats.Acceleration:F1}  Hdl:{c.Stats.Handling:F1}");
+                _lstCars.Items.Add($"{c.Symbol}  {c.Name,-17} [{c.Tier,-9}] Spd:{c.Stats.TopSpeed:F1} FuelCap:{c.MaxFuel,4:F0} Use:{c.FuelUseMultiplier:F2}x");
             _lstCars.SelectedIndex = 0;
             Controls.Add(_lstCars);
             y += 140;

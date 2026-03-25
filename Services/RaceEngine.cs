@@ -21,6 +21,9 @@ namespace RacingGame.Services
         public  RaceStatus       Status       { get; private set; }
         public  int              CurrentLap   { get; private set; } = 1;
         public  string           LastEvent    { get; private set; } = "";
+        public  string           EndReason    { get; private set; } = "";
+        public  int              TurnNumber   { get; private set; }
+        public  double           SimElapsedSeconds { get; private set; }
 
         private readonly Random _rng = new();
 
@@ -47,6 +50,8 @@ namespace RacingGame.Services
             Status = RaceStatus.InProgress;
             Timer.Start();
             _lapStartElapsed = 0;
+            TurnNumber = 0;
+            SimElapsedSeconds = 0;
         }
 
         /// <summary>
@@ -55,7 +60,35 @@ namespace RacingGame.Services
         /// </summary>
         public bool Tick()
         {
+            return PerformTurn(TurnAction.MaintainSpeed);
+        }
+
+        /// <summary>
+        /// Turn-based simulation step: one player action advances one race turn.
+        /// </summary>
+        public bool PerformTurn(TurnAction action)
+        {
             if (Status != RaceStatus.InProgress) return false;
+
+            TurnNumber++;
+            SimElapsedSeconds += GameConstants.TurnSeconds;
+
+            switch (action)
+            {
+                case TurnAction.SpeedUp:
+                    Human.ApplyBoost();
+                    break;
+                case TurnAction.MaintainSpeed:
+                    if (!Human.MaintainSpeedEnabled)
+                        Human.ToggleMaintainSpeed();
+                    break;
+                case TurnAction.PitStop:
+                    if (!Human.TryRefuel())
+                        LastEvent = "⛽ Pit stop failed.";
+                    else
+                        LastEvent = "⛽ Pit stop complete.";
+                    break;
+            }
 
             Weather.Tick();
             double mult = Weather.GetMultiplier() * Track.DifficultyMultiplier();
@@ -63,6 +96,18 @@ namespace RacingGame.Services
             // Advance all
             Human.Advance(mult);
             foreach (var ai in AIRacers) ai.Advance(mult);
+
+            if (SimElapsedSeconds >= GameConstants.RaceTimeLimitSeconds)
+            {
+                FinishRace(RaceStatus.Cancelled, "⏰ Time ran out!");
+                return false;
+            }
+
+            if (Human.SelectedCar.Fuel <= 0)
+            {
+                FinishRace(RaceStatus.Cancelled, "⛽ You ran out of fuel!");
+                return false;
+            }
 
             // Random event (4% chance per tick)
             if (_rng.Next(100) < 4)
@@ -74,8 +119,8 @@ namespace RacingGame.Services
             // Check if human finished this lap
             if (Human.HasFinished)
             {
-                double lapTime = Timer.Elapsed - _lapStartElapsed;
-                _lapStartElapsed = Timer.Elapsed;
+                double lapTime = SimElapsedSeconds - _lapStartElapsed;
+                _lapStartElapsed = SimElapsedSeconds;
 
                 Human.RecordLapTime(lapTime);
                 foreach (var ai in AIRacers)
@@ -86,10 +131,7 @@ namespace RacingGame.Services
 
                 if (CurrentLap > Track.DefaultLaps)
                 {
-                    Status = RaceStatus.Finished;
-                    Timer.Stop();
-                    var results = BuildResults();
-                    RaceFinished?.Invoke(results);
+                    FinishRace(RaceStatus.Finished, "🏁 Race complete!");
                     return false;
                 }
             }
@@ -105,6 +147,18 @@ namespace RacingGame.Services
 
         /// <summary>Human player refuel — called on F.</summary>
         public bool TryRefuel() => Human.TryRefuel();
+
+        /// <summary>Human player brake — called on S.</summary>
+        public void ApplyBrake() => Human.ApplyBrake();
+
+        public string SimElapsedFormatted
+        {
+            get
+            {
+                var ts = TimeSpan.FromSeconds(SimElapsedSeconds);
+                return $"{ts.Minutes:D2}:{ts.Seconds:D2}.{ts.Milliseconds / 10:D2}";
+            }
+        }
 
         private string TriggerEvent()
         {
@@ -134,6 +188,17 @@ namespace RacingGame.Services
                 list.Add((ai.Name, ai.TotalRaceTime(), false));
             list.Sort((a, b) => a.Item2.CompareTo(b.Item2));
             return list;
+        }
+
+        private void FinishRace(RaceStatus status, string reason)
+        {
+            Status = status;
+            EndReason = reason;
+            Timer.Stop();
+            LastEvent = reason;
+            EventTriggered?.Invoke(reason);
+            var results = BuildResults();
+            RaceFinished?.Invoke(results);
         }
     }
 }

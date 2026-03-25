@@ -293,8 +293,7 @@ namespace RacingGame.UI.Forms
                 for (int i = 0; i < 3; i++)
                     aiList.Add(new AIRacer(names[i], aiCars[rng.Next(aiCars.Length)], diffs[i], track.DefaultLaps));
 
-                var session = new RaceSession(human, aiList, track);
-                var raceForm = new RaceForm(session, _leaderboard);
+                var raceForm = new global::RacingGame.Forms.RaceForm(human, aiList, track);
                 raceForm.ShowDialog(this);
                 Close();
             }

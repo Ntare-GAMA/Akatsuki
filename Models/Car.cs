@@ -34,19 +34,21 @@ namespace RacingGame.Models
         public string    Symbol  { get; }   // emoji shown on track
 
         public double MaxFuel { get; }
+        public double FuelUseMultiplier { get; } // lower = more fuel efficient
 
         // Fuel and mileage
         public double Fuel { get; private set; }  // Start set in ctor
         public double Mileage { get; private set; } = 0.0; // Total distance covered
 
-        public Car(string name, CarTier tier, CarStats stats, string symbol)
+        public Car(string name, CarTier tier, CarStats stats, string symbol, double maxFuel, double fuelUseMultiplier)
         {
             Name   = name;
             Tier   = tier;
             Stats  = stats;
             Symbol = symbol;
-            MaxFuel = GameConstants.MaxFuel;
-            Fuel    = GameConstants.MaxFuel;
+            MaxFuel = maxFuel;
+            FuelUseMultiplier = fuelUseMultiplier;
+            Fuel    = maxFuel;
             Mileage = 0.0;
         }
 
@@ -76,10 +78,10 @@ namespace RacingGame.Models
         /// <summary>Factory: returns all available cars the player can pick from.</summary>
         public static Car[] GetAllCars() => new[]
         {
-            new Car("Kigali Cruiser",   CarTier.Budget,    new CarStats(0.8, 0.7, 0.9, 0.95), "🚗"),
-            new Car("Savanna Sprint",   CarTier.Standard,  new CarStats(1.0, 1.0, 1.0, 0.90), "🏎"),
-            new Car("Rwandan Rocket",   CarTier.Sport,     new CarStats(1.3, 1.2, 0.8, 0.85), "🚀"),
-            new Car("Volcano Viper",    CarTier.SuperCar,  new CarStats(1.6, 1.5, 0.7, 0.75), "🔥"),
+            new Car("Kigali Cruiser",   CarTier.Budget,    new CarStats(0.8, 0.7, 0.9, 0.95), "🚗", 115, 0.80),
+            new Car("Savanna Sprint",   CarTier.Standard,  new CarStats(1.0, 1.0, 1.0, 0.90), "🏎", 100, 1.00),
+            new Car("Rwandan Rocket",   CarTier.Sport,     new CarStats(1.3, 1.2, 0.8, 0.85), "🚀", 90,  1.15),
+            new Car("Volcano Viper",    CarTier.SuperCar,  new CarStats(1.6, 1.5, 0.7, 0.75), "🔥", 80,  1.30),
         };
 
         public override string ToString() => $"{Symbol} {Name} [{Tier}] | {Stats}";

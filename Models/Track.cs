@@ -52,19 +52,19 @@ namespace RacingGame.Models
         /// <summary>Factory: all built-in tracks.</summary>
         public static List<Track> GetAllTracks() => new()
         {
-            new Track("Kigali Circuit", 2.5, TrackDifficulty.Easy, 3,
+            new Track("Kigali Circuit", 2.5, TrackDifficulty.Easy, 5,
                 "A smooth city loop — perfect for beginners.",
                 new() { new(0,0), new(2,0), new(2,2), new(0,2), new(0,0) }),
 
-            new Track("Nyungwe Forest Run", 5.0, TrackDifficulty.Medium, 3,
+            new Track("Nyungwe Forest Run", 5.0, TrackDifficulty.Medium, 5,
                 "Winding forest roads with tight corners.",
                 new() { new(0,0), new(3,1), new(5,3), new(4,5), new(1,4), new(0,0) }),
 
-            new Track("Volcano Peak Sprint", 8.0, TrackDifficulty.Hard, 2,
+            new Track("Volcano Peak Sprint", 8.0, TrackDifficulty.Hard, 5,
                 "High altitude — thin air, sharp drops, no mercy.",
                 new() { new(0,0), new(4,2), new(7,5), new(6,8), new(2,7), new(0,0) }),
 
-            new Track("Hell's Gate Extreme", 12.0, TrackDifficulty.Extreme, 1,
+            new Track("Hell's Gate Extreme", 12.0, TrackDifficulty.Extreme, 5,
                 "One lap. One chance. Legends only.",
                 new() { new(0,0), new(5,3), new(10,1), new(12,6), new(8,10), new(2,9), new(0,0) }),
         };
